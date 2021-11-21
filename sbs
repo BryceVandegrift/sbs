@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# program name: A blog generation script
+# 2021 Bryce Vandegrift
+# This program is licensed under the GPL V3
+# Report bugs to: bpv@disroot.org
+
+name="Bryce Vandegrift"
+website="https://brycevandegrift.xyz/"
+blog_dir="blog"
+blogindex="blog/index.html"
+rssindex="rss.xml"
+draft_dir=".drafts"
+
+listDrafts() {
+	echo "Printing drafts"
+}
+
+delete() {
+	echo "Deleting draft"
+}
+
+help() {
+	echo "help"
+}
+
+version() {
+	echo "version"
+}
+
+case "$1" in
+	edit) shift;	"$@" ;;
+	delete|del) shift;	"$@" ;;
+	help|--h) shift;	help "$@" ;;
+	version|--v) shift;	version "$@" ;;
+esac
+exit 0
