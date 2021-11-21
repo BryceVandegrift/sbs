@@ -12,6 +12,14 @@ blogindex="blog/index.html"
 rssindex="rss.xml"
 draft_dir=".drafts"
 
+default() {
+	if [ -z "$1" ]; then
+		help
+	else
+		echo "ERROR: $1 is not a valid command!"
+	fi
+}
+
 listDrafts() {
 	echo "Printing drafts"
 }
@@ -21,11 +29,21 @@ delete() {
 }
 
 help() {
-	echo "help"
+	cat <<-EOF
+Usage:
+        sbs [OPERATION] ...
+Operations:
+        sbs publish
+        sbs edit
+        sbs help
+                Show this text
+        sbs version
+                Show program version
+EOF
 }
 
 version() {
-	echo "version"
+	echo "sbs: Static Blogging System V1.0.0"
 }
 
 case "$1" in
@@ -33,5 +51,6 @@ case "$1" in
 	delete|del) shift;	"$@" ;;
 	help|--h) shift;	help "$@" ;;
 	version|--v) shift;	version "$@" ;;
+	*)	default "$@" ;;
 esac
 exit 0
