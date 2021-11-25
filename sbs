@@ -7,6 +7,7 @@
 
 name="Bryce Vandegrift"
 website="https://brycevandegrift.xyz/"
+website_dir="/home/bryce/Documents/website"
 blog_dir="blog"
 blogindex="blog/index.html"
 rssindex="rss.xml"
@@ -18,15 +19,19 @@ default() {
 
 listDrafts() {
 	echo "Printing drafts"
-	case "$(ls $draft_dir | wc -l)" in
+	case "$(ls "$website_dir/$draft_dir" | wc -l)" in
 		0) echo "There are no drafts." && exit 1 ;;
-		*) ls -rc $draft_dir | nl
-		read -erp "Pick a draft to $1: " number ;;
+		*) ls -rc "$website_dir/$draft_dir" | nl
+		read -rp "Pick a draft to $1: " number ;;
 	esac
 }
 
 new() {
-	read -erp "Enter file name: " name
+	read -rp "Enter file name: " name
+	echo $name | grep -q "\"" && echo "Double quotes are not allowed in file names." && exit 1
+	url="$(echo $name | tr -d '[:punct:]' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')"
+	( [ -f "$website_dir/$draft_dir/$url.md" ] || [ -f "$website_dir/$blog_dir/$url.html" ] ) && echo "A draft or post already exists under that name!" && exit 1
+	$EDITOR "$website_dir/.drafts/$url.md"
 }
 
 edit() {
