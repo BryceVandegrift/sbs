@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# program name: A blog generation script
+# Static Blogging System: A blog generation script
 # 2021 Bryce Vandegrift
 # This program is licensed under the GPL V3
 # Report bugs to: bpv@disroot.org
@@ -13,15 +13,28 @@ rssindex="rss.xml"
 draft_dir=".drafts"
 
 default() {
-	if [ -z "$1" ]; then
-		help
-	else
-		echo "ERROR: $1 is not a valid command!"
-	fi
+	[ -z "$1" ] && help || echo "ERROR: $1 is not a valid command!" && exit 1
 }
 
 listDrafts() {
 	echo "Printing drafts"
+	case "$(ls $draft_dir | wc -l)" in
+		0) echo "There are no drafts." && exit 1 ;;
+		*) ls -rc $draft_dir | nl
+		read -erp "Pick a draft to $1: " number ;;
+	esac
+}
+
+new() {
+	read -erp "Enter file name: " name
+}
+
+edit() {
+	echo "Editing..."
+}
+
+publish() {
+	echo "Draft is published..."
 }
 
 delete() {
@@ -33,8 +46,10 @@ help() {
 Usage:
         sbs [OPERATION] ...
 Operations:
-        sbs publish
+        sbs new
         sbs edit
+	sbs publish
+	sbs delete
         sbs help
                 Show this text
         sbs version
@@ -46,11 +61,15 @@ version() {
 	echo "sbs: Static Blogging System V1.0.0"
 }
 
+[ -z "$EDITOR" ] && EDITOR="vi"
+
 case "$1" in
-	edit) shift;	"$@" ;;
-	delete|del) shift;	"$@" ;;
-	help|--h) shift;	help "$@" ;;
-	version|--v) shift;	version "$@" ;;
+	new) shift;	new "$@" ;;
+	edit) shift;	edit "$@" ;;
+	publish) shift;		publish "$@" ;;
+	delete|del) shift;	delete "$@" ;;
+	help|-h) shift;	help "$@" ;;
+	version|-v) shift;	version "$@" ;;
 	*)	default "$@" ;;
 esac
 exit 0
