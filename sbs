@@ -12,6 +12,8 @@ blog_dir="blog"
 blogindex="blog/index.html"
 rssindex="rss.xml"
 draft_dir=".drafts"
+html_css_path="//brycevandegrift.xyz/index.css"
+html_icon_path="//brycevandegrift.xyz/p/icon.ico"
 
 default() {
 	[ -z "$1" ] && help || echo "ERROR: $1 is not a valid command!" && exit 1
@@ -24,6 +26,7 @@ listDrafts() {
 		*) ls -rc "$website_dir/$draft_dir" | nl
 		read -rp "Pick a draft to $1: " number ;;
 	esac
+	choice="$(ls -rc "$website_dir/$draft_dir" | nl | grep -w $number | awk '{print $2}')"
 }
 
 new() {
@@ -35,15 +38,22 @@ new() {
 }
 
 edit() {
-	echo "Editing..."
+	listDrafts edit "$@"
+	$EDITOR "$website_dir/$draft_dir/$choice"
 }
 
 publish() {
-	echo "Draft is published..."
+	listDrafts publish "$@"
+	contents=$(pandoc -f markdown -t html "$website_dir/$draft_dir/$choice")
+	title=$(echo "$contents" | grep "<h1.*</h1>$" | sed 's/<\/h1>$//g' | sed 's/^<h1\s.*>//g') 
+	printf "<!DOCTYPE html>\n<html lang=\"en\" dir=\"ltr\">\n<head>\n<meta charset=\"utf-8\">\n<link rel=\"icon\" href='%s' type=\"image/x-icon\">\n<link rel=\"stylesheet\" href='%s'>\n<title>%s</title>\n</head>\n<body>\n%s\n</body>\n</html>" "$html_icon_path" "$html_css_path" "$title" "$contents"
+	printf ""
+	printf ""
 }
 
 delete() {
-	echo "Deleting draft"
+	listDrafts delete "$@"
+	rm "$website_dir/$draft_dir/$choice"
 }
 
 help() {
