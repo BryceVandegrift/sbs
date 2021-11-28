@@ -6,14 +6,14 @@
 # Report bugs to: bpv@disroot.org
 
 name="Bryce Vandegrift"
-website="https://brycevandegrift.xyz/"
-website_dir="/home/bryce/Documents/website"
+website="https://brycevandegrift.xyz"
+website_dir="/home/bryce/Documents/website" # Absolute path to website directory
 blog_dir="blog"
 blogindex="blog/index.html"
 rssindex="rss.xml"
 draft_dir=".drafts"
-html_css_path="//brycevandegrift.xyz/index.css"
-html_icon_path="//brycevandegrift.xyz/p/icon.ico"
+html_css_path="//brycevandegrift.xyz/index.css" # Path to css stylesheet
+html_icon_path="//brycevandegrift.xyz/p/icon.ico" # Path to web icon
 
 default() {
 	[ -z "$1" ] && help || echo "ERROR: $1 is not a valid command!" && exit 1
@@ -32,9 +32,9 @@ listDrafts() {
 new() {
 	read -rp "Enter file name: " name
 	echo $name | grep -q "\"" && echo "Double quotes are not allowed in file names." && exit 1
-	url="$(echo $name | tr -d '[:punct:]' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')"
-	( [ -f "$website_dir/$draft_dir/$url.md" ] || [ -f "$website_dir/$blog_dir/$url.html" ] ) && echo "A draft or post already exists under that name!" && exit 1
-	$EDITOR "$website_dir/.drafts/$url.md"
+	name="$(echo $name | tr -d '[:punct:]' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')"
+	( [ -f "$website_dir/$draft_dir/$name.md" ] || [ -f "$website_dir/$blog_dir/$name.html" ] ) && echo "A draft or post already exists under that name!" && exit 1
+	$EDITOR "$website_dir/.drafts/$name.md"
 }
 
 edit() {
@@ -44,11 +44,15 @@ edit() {
 
 publish() {
 	listDrafts publish "$@"
+	dir_name=$(echo $choice | sed 's/.md$//g')
+	date=$(date '+%a, %d %b %Y %H:%M:%S %z')
+	url="$website/blog/$dir_name"
 	contents=$(pandoc -f markdown -t html "$website_dir/$draft_dir/$choice")
-	title=$(echo "$contents" | grep "<h1.*</h1>$" | sed 's/<\/h1>$//g' | sed 's/^<h1\s.*>//g') 
-	printf "<!DOCTYPE html>\n<html lang=\"en\" dir=\"ltr\">\n<head>\n<meta charset=\"utf-8\">\n<link rel=\"icon\" href='%s' type=\"image/x-icon\">\n<link rel=\"stylesheet\" href='%s'>\n<title>%s</title>\n</head>\n<body>\n%s\n</body>\n</html>" "$html_icon_path" "$html_css_path" "$title" "$contents"
-	printf ""
-	printf ""
+	title=$(echo "$contents" | grep "<h1.*</h1>$" | sed 's/<\/h1>$//g' | sed 's/^<h1\s.*>//g')
+	tmp_dir=$(mktemp -d)
+	printf "<!DOCTYPE html>\n<html lang=\"en\" dir=\"ltr\">\n<head>\n<meta charset=\"utf-8\">\n<link rel=\"icon\" href='%s' type=\"image/x-icon\">\n<link rel=\"stylesheet\" href='%s'>\n<title>%s</title>\n</head>\n<body>\n%s\n</body>\n</html>" "$html_icon_path" "$html_css_path" "$title" "$contents" > $tmp_dir/blog.html
+	printf "\n<item>\n<title>%s</title>\n<guid>%s</guid>\n<link>%s</link>\n<pubDate>%s</pubDate>\n<description>\n%s\n</description>\n</item>" "$title" "$url.html" "$url.html" "$date" "$contents" > $tmp_dir/rss.xml
+	printf "\n<li>%s - <a href='%s'>%s</a></li>" "$(date '+%b %d, %Y')" "$url.html" "$title" > $tmp_dir/preview.html
 }
 
 delete() {
@@ -83,8 +87,8 @@ case "$1" in
 	edit) shift;	edit "$@" ;;
 	publish) shift;		publish "$@" ;;
 	delete|del) shift;	delete "$@" ;;
-	help|-h) shift;	help "$@" ;;
-	version|-v) shift;	version "$@" ;;
+	help|-h)	help ;;
+	version|-v)	version ;;
 	*)	default "$@" ;;
 esac
 exit 0
