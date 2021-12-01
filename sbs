@@ -7,11 +7,11 @@
 
 name="Bryce Vandegrift"
 website="https://brycevandegrift.xyz"
-website_dir="/home/bryce/Documents/website" # Absolute path to website directory
-blog_dir="blog"
+website_dir="/home/bryce/Documents/website" # Absolute path to website directory (replace with $(pwd) for local dir use)
+blog_dir="blog" # Blog directory relative to website directory
 blogindex="blog/index.html"
-rssindex="rss.xml"
-draft_dir=".drafts"
+rssindex="rss.xml" # RSS index relative to website directory
+draft_dir=".drafts" # Draft directory relative to website directory
 html_css_path="//brycevandegrift.xyz/index.css" # Path to css stylesheet
 html_icon_path="//brycevandegrift.xyz/p/icon.ico" # Path to web icon
 
@@ -46,13 +46,18 @@ publish() {
 	listDrafts publish "$@"
 	dir_name=$(echo $choice | sed 's/.md$//g')
 	date=$(date '+%a, %d %b %Y %H:%M:%S %z')
-	url="$website/blog/$dir_name"
+	url="$website/blog/$dir_name/$dir_name.html"
 	contents=$(pandoc -f markdown -t html "$website_dir/$draft_dir/$choice")
 	title=$(echo "$contents" | grep "<h1.*</h1>$" | sed 's/<\/h1>$//g' | sed 's/^<h1\s.*>//g')
 	tmp_dir=$(mktemp -d)
-	printf "<!DOCTYPE html>\n<html lang=\"en\" dir=\"ltr\">\n<head>\n<meta charset=\"utf-8\">\n<link rel=\"icon\" href='%s' type=\"image/x-icon\">\n<link rel=\"stylesheet\" href='%s'>\n<title>%s</title>\n</head>\n<body>\n%s\n</body>\n</html>" "$html_icon_path" "$html_css_path" "$title" "$contents" > $tmp_dir/blog.html
-	printf "\n<item>\n<title>%s</title>\n<guid>%s</guid>\n<link>%s</link>\n<pubDate>%s</pubDate>\n<description>\n%s\n</description>\n</item>" "$title" "$url.html" "$url.html" "$date" "$contents" > $tmp_dir/rss.xml
-	printf "\n<li>%s - <a href='%s'>%s</a></li>" "$(date '+%b %d, %Y')" "$url.html" "$title" > $tmp_dir/preview.html
+	mkdir $website_dir/$blog_dir/$dir_name
+	printf "<!DOCTYPE html>\n<html lang=\"en\" dir=\"ltr\">\n<head>\n<meta charset=\"utf-8\">\n<link rel=\"icon\" href='%s' type=\"image/x-icon\">\n<link rel=\"stylesheet\" href='%s'>\n<title>%s</title>\n</head>\n<body>\n%s\n</body>\n</html>" "$html_icon_path" "$html_css_path" "$title" "$contents" > $website_dir/$blog_dir/$dir_name/$dir_name.html
+	printf "\n<item>\n<title>%s</title>\n<guid>%s</guid>\n<link>%s</link>\n<pubDate>%s</pubDate>\n<description>\n%s\n</description>\n</item>\n" "$title" "$url.html" "$url.html" "$date" "$contents" > $tmp_dir/rss.xml
+	printf "\n<li>%s - <a href='%s'>%s</a></li>\n" "$(date '+%b %d, %Y')" "$url.html" "$title" > $tmp_dir/preview.html
+	sed -i "/<!-- SB -->/r $tmp_dir/rss.xml" $website_dir/$rssindex
+	sed -i "/<!-- SB -->/r $tmp_dir/preview.html" $website_dir/$blogindex
+	sed -i "/<!-- SB -->/r $tmp_dir/preview.html" $website_dir/index.html
+	rm -f $website_dir/$draft_dir/$choice
 }
 
 delete() {
@@ -70,9 +75,9 @@ Operations:
 	sbs publish
 	sbs delete
         sbs help
-                Show this text
         sbs version
-                Show program version
+
+Read README.md for more details.
 EOF
 }
 
