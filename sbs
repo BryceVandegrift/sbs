@@ -72,8 +72,8 @@ Usage:
 Operations:
         sbs new
         sbs edit
-	sbs publish
-	sbs delete
+        sbs publish
+        sbs delete
         sbs help
         sbs version
 
