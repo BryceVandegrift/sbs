@@ -3,15 +3,15 @@
 # Static Blogging System: A blog generation script
 # 2021 Bryce Vandegrift
 # This program is licensed under the GPL V3
-# Report bugs to: bpv@disroot.org
+# Report bugs to: bryce@brycevandegrift.xyz
 
 name="Bryce Vandegrift"
 website="https://brycevandegrift.xyz"
 website_dir="/home/bryce/Documents/website" # Absolute path to website directory (replace with $(pwd) for local dir use)
-blog_dir="blog" # Blog directory relative to website directory
-blogindex="blog/index.html"
-rssindex="rss.xml" # RSS index relative to website directory
-draft_dir=".drafts" # Draft directory relative to website directory
+blog_dir="$website_dir/blog" # Blog directory relative to website directory
+blogindex="$blog_dir/index.html"
+rssindex="$website_dir/rss.xml" # RSS index relative to website directory
+draft_dir="$website_dir/.drafts" # Draft directory relative to website directory
 html_css_path="//brycevandegrift.xyz/index.css" # Path to css stylesheet
 html_icon_path="//brycevandegrift.xyz/p/icon.ico" # Path to web icon
 
@@ -21,48 +21,48 @@ default() {
 
 listDrafts() {
 	echo "Printing drafts"
-	case "$(ls "$website_dir/$draft_dir" | wc -l)" in
+	case "$(ls "$draft_dir" | wc -l)" in
 		0) echo "There are no drafts." && exit 1 ;;
-		*) ls -rc "$website_dir/$draft_dir" | nl
+		*) ls -rc "$draft_dir" | nl
 		read -rp "Pick a draft to $1: " number ;;
 	esac
-	choice="$(ls -rc "$website_dir/$draft_dir" | nl | grep -w $number | awk '{print $2}')"
+	choice="$(ls -rc "$draft_dir" | nl | grep -w $number | awk '{print $2}')"
 }
 
 new() {
 	read -rp "Enter file name: " name
 	echo $name | grep -q "\"" && echo "Double quotes are not allowed in file names." && exit 1
 	name="$(echo $name | tr -d '[:punct:]' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')"
-	( [ -f "$website_dir/$draft_dir/$name.md" ] || [ -f "$website_dir/$blog_dir/$name.html" ] ) && echo "A draft or post already exists under that name!" && exit 1
-	$EDITOR "$website_dir/.drafts/$name.md"
+	( [ -f "$draft_dir/$name.md" ] || [ -f "$blog_dir/$name.html" ] ) && echo "A draft or post already exists under that name!" && exit 1
+	$EDITOR "$draft_dir/$name.md"
 }
 
 edit() {
 	listDrafts edit "$@"
-	$EDITOR "$website_dir/$draft_dir/$choice"
+	$EDITOR "$draft_dir/$choice"
 }
 
 publish() {
 	listDrafts publish "$@"
 	dir_name=$(echo $choice | sed 's/.md$//g')
 	date=$(date '+%a, %d %b %Y %H:%M:%S %z')
-	url="$website/blog/$dir_name/$dir_name.html"
-	contents=$(pandoc -f markdown -t html "$website_dir/$draft_dir/$choice")
+	url="$blog_dir/$dir_name/$dir_name.html"
+	contents=$(pandoc -f markdown -t html "$draft_dir/$choice")
 	title=$(echo "$contents" | grep "<h1.*</h1>$" | sed 's/<\/h1>$//g' | sed 's/^<h1\s.*>//g')
 	tmp_dir=$(mktemp -d)
-	mkdir $website_dir/$blog_dir/$dir_name
-	printf "<!DOCTYPE html>\n<html lang=\"en\" dir=\"ltr\">\n<head>\n<meta charset=\"utf-8\">\n<link rel=\"icon\" href='%s' type=\"image/x-icon\">\n<link rel=\"stylesheet\" href='%s'>\n<title>%s</title>\n</head>\n<body>\n%s\n</body>\n</html>" "$html_icon_path" "$html_css_path" "$title" "$contents" > $website_dir/$blog_dir/$dir_name/$dir_name.html
+	mkdir $blog_dir/$dir_name
+	printf "<!DOCTYPE html>\n<html lang=\"en\" dir=\"ltr\">\n<head>\n<meta charset=\"utf-8\">\n<link rel=\"icon\" href='%s' type=\"image/x-icon\">\n<link rel=\"stylesheet\" href='%s'>\n<title>%s</title>\n</head>\n<body>\n%s\n</body>\n</html>" "$html_icon_path" "$html_css_path" "$title" "$contents" > $blog_dir/$dir_name/$dir_name.html
 	printf "\n<item>\n<title>%s</title>\n<guid>%s</guid>\n<link>%s</link>\n<pubDate>%s</pubDate>\n<description>\n%s\n</description>\n</item>\n" "$title" "$url.html" "$url.html" "$date" "$contents" > $tmp_dir/rss.xml
 	printf "\n<li>%s - <a href='%s'>%s</a></li>\n" "$(date '+%b %d, %Y')" "$url.html" "$title" > $tmp_dir/preview.html
-	sed -i "/<!-- SB -->/r $tmp_dir/rss.xml" $website_dir/$rssindex
-	sed -i "/<!-- SB -->/r $tmp_dir/preview.html" $website_dir/$blogindex
+	sed -i "/<!-- SB -->/r $tmp_dir/rss.xml" $rssindex
+	sed -i "/<!-- SB -->/r $tmp_dir/preview.html" $blogindex
 	sed -i "/<!-- SB -->/r $tmp_dir/preview.html" $website_dir/index.html
-	rm -f $website_dir/$draft_dir/$choice
+	rm -f $draft_dir/$choice
 }
 
 delete() {
 	listDrafts delete "$@"
-	rm "$website_dir/$draft_dir/$choice"
+	rm "$draft_dir/$choice"
 }
 
 help() {
