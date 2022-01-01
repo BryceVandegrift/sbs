@@ -46,14 +46,14 @@ publish() {
 	listDrafts publish "$@"
 	dir_name=$(echo $choice | sed 's/.md$//g')
 	date=$(date '+%a, %d %b %Y %H:%M:%S %z')
-	url="$blog_dir/$dir_name/$dir_name.html"
+	url="$website/blog/$dir_name/$dir_name.html"
 	contents=$(pandoc -f markdown -t html "$draft_dir/$choice")
 	title=$(echo "$contents" | grep "<h1.*</h1>$" | sed 's/<\/h1>$//g' | sed 's/^<h1\s.*>//g')
 	tmp_dir=$(mktemp -d)
 	mkdir $blog_dir/$dir_name
 	printf "<!DOCTYPE html>\n<html lang=\"en\" dir=\"ltr\">\n<head>\n<meta charset=\"utf-8\">\n<link rel=\"icon\" href='%s' type=\"image/x-icon\">\n<link rel=\"stylesheet\" href='%s'>\n<title>%s</title>\n</head>\n<body>\n%s\n</body>\n</html>" "$html_icon_path" "$html_css_path" "$title" "$contents" > $blog_dir/$dir_name/$dir_name.html
-	printf "\n<item>\n<title>%s</title>\n<guid>%s</guid>\n<link>%s</link>\n<pubDate>%s</pubDate>\n<description>\n%s\n</description>\n</item>\n" "$title" "$url.html" "$url.html" "$date" "$contents" > $tmp_dir/rss.xml
-	printf "\n<li>%s - <a href='%s'>%s</a></li>\n" "$(date '+%b %d, %Y')" "$url.html" "$title" > $tmp_dir/preview.html
+	printf "\n<item>\n<title>%s</title>\n<guid>%s</guid>\n<link>%s</link>\n<pubDate>%s</pubDate>\n<description>\n%s\n</description>\n</item>\n" "$title" "$url" "$url" "$date" "$contents" > $tmp_dir/rss.xml
+	printf "\n<li>%s - <a href='%s'>%s</a></li>\n" "$(date '+%b %d, %Y')" "$url" "$title" > $tmp_dir/preview.html
 	sed -i "/<!-- SB -->/r $tmp_dir/rss.xml" $rssindex
 	sed -i "/<!-- SB -->/r $tmp_dir/preview.html" $blogindex
 	sed -i "/<!-- SB -->/r $tmp_dir/preview.html" $website_dir/index.html
