@@ -36,6 +36,7 @@ sbs can also be used on a directory by directory basis, just change the
 sbs new		# Create a new blog post
 sbs edit	# Quickly edit existing draft
 sbs publish	# Publish a draft and turn it into a webpage
+sbs rename	# Rename a draft
 sbs delete	# Delete a draft
 sbs help	# Show quick help
 sbs version	# Show version

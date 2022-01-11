@@ -33,7 +33,7 @@ new() {
 	read -rp "Enter file name: " name
 	echo $name | grep -q "\"" && echo "Double quotes are not allowed in file names." && exit 1
 	name="$(echo $name | tr -d '[:punct:]' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')"
-	( [ -f "$draft_dir/$name.md" ] || [ -f "$blog_dir/$name.html" ] ) && echo "A draft or post already exists under that name!" && exit 1
+	( [ -f "$draft_dir/$name.md" ] || [ -f "$blog_dir/$name/$name.html" ] ) && echo "A draft or post already exists under that name!" && exit 1
 	$EDITOR "$draft_dir/$name.md"
 }
 
@@ -60,6 +60,14 @@ publish() {
 	rm -f $draft_dir/$choice
 }
 
+rename() {
+	listDrafts rename "$@"
+	read -rp "Enter new file name: " name
+	name="$(echo $name | tr -d '[:punct:]' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')"
+	( [ -f "$draft_dir/$name.md" ] || [ -f "$blog_dir/$name/$name.html" ] ) && echo "A draft or post already exists under that name!" && exit 1
+	mv "$draft_dir/$choice" "$draft_dir/$name.md"
+}
+
 delete() {
 	listDrafts delete "$@"
 	rm "$draft_dir/$choice"
@@ -73,6 +81,7 @@ Operations:
         sbs new
         sbs edit
         sbs publish
+	sbs rename
         sbs delete
         sbs help
         sbs version
@@ -82,7 +91,7 @@ EOF
 }
 
 version() {
-	echo "sbs: Static Blogging System V1.0.0"
+	echo "sbs: Static Blogging System V1.0.1"
 }
 
 [ -z "$EDITOR" ] && EDITOR="vi"
@@ -91,6 +100,7 @@ case "$1" in
 	new) shift;	new "$@" ;;
 	edit) shift;	edit "$@" ;;
 	publish) shift;		publish "$@" ;;
+	rename) shift;		rename "$@" ;;
 	delete|del) shift;	delete "$@" ;;
 	help|-h)	help ;;
 	version|-v)	version ;;
