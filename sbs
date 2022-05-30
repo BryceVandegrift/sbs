@@ -57,7 +57,7 @@ publish() {
 	sed -i "/<!-- SB -->/r $tmp_dir/rss.xml" $rssindex
 	sed -i "/<!-- SB -->/r $tmp_dir/preview.html" $blogindex
 	sed -i "/<!-- SB -->/r $tmp_dir/preview.html" $website_dir/index.html
-	rm -f $draft_dir/$choice
+	#rm -f $draft_dir/$choice	# Don't delete draft by default
 }
 
 rename() {
@@ -81,7 +81,7 @@ Operations:
         sbs new
         sbs edit
         sbs publish
-	sbs rename
+        sbs rename
         sbs delete
         sbs help
         sbs version
@@ -100,6 +100,7 @@ case "$1" in
 	new) shift;	new "$@" ;;
 	edit) shift;	edit "$@" ;;
 	publish) shift;		publish "$@" ;;
+	revise) shift;		revise "$@" ;;
 	rename) shift;		rename "$@" ;;
 	delete|del) shift;	delete "$@" ;;
 	help|-h)	help ;;

@@ -44,7 +44,7 @@ sbs version	# Show version
 
 ## Bugs
 
-Please report any bugs or errors to [bpv@disroot.org](mailto://bpv@disroot.org).
+Please report any bugs or errors to [bryce@brycevandegrift.xyz](mailto://bryce@brycevandegrift.xyz).
 
 ## Contributions
 
